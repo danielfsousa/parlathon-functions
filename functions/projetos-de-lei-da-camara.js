@@ -3,11 +3,12 @@ const querystring = require('querystring')
 const { get, random } = require('lodash')
 
 /**
-* Listar projetos de lei
+* Listar projetos de lei da CÂmara dos Deputados
 * @returns {array}
 */
 module.exports = async (context) => {
-  const urlProposicoes = `https://dadosabertos.camara.leg.br/api/v2/proposicoes?${query}`
+  const CASA_CAMARA_ID = 1
+  const urlProposicoes = query => `https://dadosabertos.camara.leg.br/api/v2/proposicoes?${query}`
   const urlAutores = id => `https://dadosabertos.camara.leg.br/api/v2/proposicoes/${id}/autores`
 
   const httpGet = async (url) => {
@@ -17,15 +18,19 @@ module.exports = async (context) => {
     return dados
   }
 
+  // Proposições
+
   const parametros = { ...context.params }
   parametros.siglaTipo = get(context, 'params.siglaTipo', 'PL')
   parametros.ordem = get(context, 'params.ordem', 'DESC')
-  parametros.ordenarPor = get(context, 'params.numero', 'numero')
-
+  parametros.ordenarPor = get(context, 'params.ordenarPor', 'numero')
   const query = querystring.stringify(parametros)
-  const proposicoes = await httpGet(urlProposicoes)
-  const autores = await Promise.all(proposicoes.map(p => httpGet(urlAutores(p.id))))
 
+  const proposicoes = await httpGet(urlProposicoes(query))
+
+  // Autores
+
+  const autores = await Promise.all(proposicoes.map(p => httpGet(urlAutores(p.id))))
   const autoresAleatorios = autores.map(a => a[random(0, a.length - 1)] || {})
 
   const autoresDetalhes = await Promise.all(autoresAleatorios.map(autor => {
@@ -37,15 +42,24 @@ module.exports = async (context) => {
     const detalhes = autoresDetalhes[index].ultimoStatus || {}
     return {
       id,
-      nome: autor.nome,
+      nome: detalhes.nome,
+      nomeCompleto: autor.nome,
       tipo: autor.tipo,
       partido: detalhes.siglaPartido,
       foto: detalhes.urlFoto
     }
   })
 
+  // Join
+
   return proposicoes.map((proposicao, index) => ({
-    ...proposicao,
+    casaId: CASA_CAMARA_ID,
+    casa: 'Câmara dos Deputados',
+    id: proposicao.id,
+    siglaTipo: proposicao.siglaTipo,
+    numero: proposicao.numero,
+    ano: proposicao.ano,
+    ementa: proposicao.ementa,
     autor: autoresComFotos[index]
   }))
 }
