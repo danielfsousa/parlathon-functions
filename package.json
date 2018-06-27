@@ -1,6 +1,6 @@
 {
   "name": "parlathon",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "",
   "author": "danielfsousa <sousa.dfs@gmail.com>",
   "main": "functions/__main__.js",
