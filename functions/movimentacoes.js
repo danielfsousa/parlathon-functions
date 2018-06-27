@@ -1,5 +1,5 @@
 const axios = require('axios')
-const { get, sortBy } = require('lodash')
+const { get, sortBy, take } = require('lodash')
 
 /**
 * Lista as movimentações / tramitações da Câmara, Senado e Congresso
@@ -7,6 +7,10 @@ const { get, sortBy } = require('lodash')
 * @returns {array} Movimentacoes
 */
 module.exports = async (proposicaoId, context) => {
+  const CASA_CAMARA_ID = 1
+  const CASA_SENADO_ID = 2
+  const CASA_CONGRESSO_ID = 3
+
   const camara = {
     obterProposicao: async (id) => {
       const res = await axios.get(`https://dadosabertos.camara.leg.br/api/v2/proposicoes/${id}`)
@@ -24,7 +28,7 @@ module.exports = async (proposicaoId, context) => {
       return data.dados || {}
     }
   }
-  
+
   const senado = {
     obterMovimentacoes: async (urlSenado) => {
       if (!urlSenado) return []
@@ -48,7 +52,7 @@ module.exports = async (proposicaoId, context) => {
   ])
 
   // TODO: verificar se existem casos onde há mais de uma proposição relacionada
-  const urlSenado = proposicao.uriPropPrincipal || proposicao.uriPropAnterior || proposicao.uriPropPosterior
+  const urlSenado = proposicao.uriPropAnterior || proposicao.uriPropPosterior
   const movimentacoesDoSenado = await senado.obterMovimentacoes(urlSenado)
 
   const normalizarDadosDaCamara = async (movimentacoes) => {
@@ -61,6 +65,7 @@ module.exports = async (proposicaoId, context) => {
     return ordenados.map(movimentacao => {
       const orgao = orgaos.find(o => o.uri === movimentacao.uriOrgao)
       return {
+        casaId: CASA_CAMARA_ID,
         casa: 'Câmara dos Deputados',
         data: new Date(movimentacao.dataHora),
         orgao: {
@@ -80,21 +85,24 @@ module.exports = async (proposicaoId, context) => {
       const tramitacao = movimentacao.IdentificacaoTramitacao
       const situacao = tramitacao.Situacao || {}
       const orgao = tramitacao.DestinoTramitacao.Local
+      const casa = orgao.NomeCasaLocal
+      const despacho = tramitacao.TextoTramitacao
       const textos = (movimentacao.Textos && movimentacao.Textos.Texto) || {}
       const documento = Array.isArray(textos)
         ? textos[0] && textos[0].UrlTexto
         : textos.UrlTexto
 
       return {
-        casa: orgao.NomeCasaLocal,
+        casaId: casa === 'Senado Federal' ? CASA_SENADO_ID : CASA_CONGRESSO_ID,
+        casa,
         data: new Date(tramitacao.DataTramitacao),
         orgao: {
           sigla: orgao.SiglaLocal,
           nome: orgao.NomeLocal
         },
-        descricaoDaTramitacao: null,
+        descricaoDaTramitacao: take(despacho.split(' '), 5).join(' '),
         descricaoDaSituacao: situacao.DescricaoSituacao,
-        despacho: tramitacao.TextoTramitacao,
+        despacho,
         documento
       }
     })
