@@ -42,8 +42,7 @@ module.exports = async (context) => {
     const detalhes = autoresDetalhes[index].ultimoStatus || {}
     return {
       id,
-      nome: detalhes.nome,
-      nomeCompleto: autor.nome,
+      nome: autor.nome,
       tipo: autor.tipo,
       partido: detalhes.siglaPartido,
       foto: detalhes.urlFoto
