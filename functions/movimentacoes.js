@@ -7,9 +7,20 @@ const { get, sortBy, take } = require('lodash')
 * @returns {array} Movimentacoes
 */
 module.exports = async (proposicaoId, context) => {
-  const CASA_CAMARA_ID = 1
-  const CASA_SENADO_ID = 2
-  const CASA_CONGRESSO_ID = 3
+  const CASA_CAMARA = {
+    id: 1,
+    nome: 'Câmara dos Deputados'
+  }
+
+  const CASA_SENADO = {
+    id: 2,
+    nome: 'Senado Federal'
+  }
+
+  const CASA_CONGRESSO = {
+    id: 3,
+    nome: 'Congresso Nacional'
+  }
 
   const camara = {
     obterProposicao: async (id) => {
@@ -65,17 +76,16 @@ module.exports = async (proposicaoId, context) => {
     return ordenados.map(movimentacao => {
       const orgao = orgaos.find(o => o.uri === movimentacao.uriOrgao)
       return {
-        casaId: CASA_CAMARA_ID,
-        casa: 'Câmara dos Deputados',
         data: new Date(movimentacao.dataHora),
+        descricaoDaTramitacao: movimentacao.descricaoTramitacao,
+        descricaoDaSituacao: movimentacao.descricaoSituacao,
+        despacho: movimentacao.despacho,
+        documento: movimentacao.url,
         orgao: {
           sigla: orgao.sigla,
           nome: orgao.nome
         },
-        descricaoDaTramitacao: movimentacao.descricaoTramitacao,
-        descricaoDaSituacao: movimentacao.descricaoSituacao,
-        despacho: movimentacao.despacho,
-        documento: movimentacao.url
+        casa: CASA_CAMARA
       }
     })
   }
@@ -85,7 +95,6 @@ module.exports = async (proposicaoId, context) => {
       const tramitacao = movimentacao.IdentificacaoTramitacao
       const situacao = tramitacao.Situacao || {}
       const orgao = tramitacao.DestinoTramitacao.Local
-      const casa = orgao.NomeCasaLocal
       const despacho = tramitacao.TextoTramitacao
       const textos = (movimentacao.Textos && movimentacao.Textos.Texto) || {}
       const documento = Array.isArray(textos)
@@ -93,17 +102,16 @@ module.exports = async (proposicaoId, context) => {
         : textos.UrlTexto
 
       return {
-        casaId: casa === 'Senado Federal' ? CASA_SENADO_ID : CASA_CONGRESSO_ID,
-        casa,
         data: new Date(tramitacao.DataTramitacao),
+        descricaoDaTramitacao: take(despacho.split(' '), 5).join(' '),
+        descricaoDaSituacao: situacao.DescricaoSituacao,
+        despacho,
+        documento,
         orgao: {
           sigla: orgao.SiglaLocal,
           nome: orgao.NomeLocal
         },
-        descricaoDaTramitacao: take(despacho.split(' '), 5).join(' '),
-        descricaoDaSituacao: situacao.DescricaoSituacao,
-        despacho,
-        documento
+        casa: orgao.NomeCasaLocal === 'Senado Federal' ? CASA_SENADO : CASA_CONGRESSO
       }
     })
   }

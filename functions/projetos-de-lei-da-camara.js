@@ -7,7 +7,11 @@ const { get, random } = require('lodash')
 * @returns {array}
 */
 module.exports = async (context) => {
-  const CASA_CAMARA_ID = 1
+  const CASA = {
+    id: 1,
+    nome: 'Câmara dos Deputados'
+  }
+
   const urlProposicoes = query => `https://dadosabertos.camara.leg.br/api/v2/proposicoes?${query}`
   const urlAutores = id => `https://dadosabertos.camara.leg.br/api/v2/proposicoes/${id}/autores`
 
@@ -52,13 +56,12 @@ module.exports = async (context) => {
   // Join
 
   return proposicoes.map((proposicao, index) => ({
-    casaId: CASA_CAMARA_ID,
-    casa: 'Câmara dos Deputados',
     id: proposicao.id,
     siglaTipo: proposicao.siglaTipo,
     numero: proposicao.numero,
     ano: proposicao.ano,
     ementa: proposicao.ementa,
-    autor: autoresComFotos[index]
+    autor: autoresComFotos[index],
+    casa: CASA
   }))
 }
