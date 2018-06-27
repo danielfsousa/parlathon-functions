@@ -4,7 +4,7 @@ const { get, random, take, partial } = require('lodash')
 
 /**
 * Listar projetos de lei da Senado federal
-* @returns {array}
+* @returns {array} Lista de projetos de lei do senado
 */
 module.exports = async (context) => {
   const CASA = {
