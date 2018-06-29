@@ -20,7 +20,11 @@ module.exports = async (proposicaoId, context) => {
   }
 
   const httpGetCamara = async (camaraObj = {}) => {
-    const { SiglaSubtipoMateria, NumeroMateria, AnoMateria } = camaraObj.IdentificacaoMateria
+    const { IdentificacaoMateria } = camaraObj
+
+    if (!camaraObj || !IdentificacaoMateria) return {}
+
+    const { SiglaSubtipoMateria, NumeroMateria, AnoMateria } = IdentificacaoMateria
     const query = querystring.stringify({
       siglaTipo: SiglaSubtipoMateria,
       ano: AnoMateria,

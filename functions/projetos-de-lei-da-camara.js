@@ -15,11 +15,11 @@ module.exports = async (context) => {
   const urlProposicoes = query => `https://dadosabertos.camara.leg.br/api/v2/proposicoes?${query}`
   const urlAutores = id => `https://dadosabertos.camara.leg.br/api/v2/proposicoes/${id}/autores`
 
-  const httpGet = async (url) => {
+  const httpGet = async (url, def) => {
+    if (!url) return {}
     const res = await axios.get(url)
     const { data = {} } = res
-    const { dados = [] } = data
-    return dados
+    return data.dados || def
   }
 
   // Proposições
@@ -30,7 +30,10 @@ module.exports = async (context) => {
   parametros.ordenarPor = get(context, 'params.ordenarPor', 'numero')
   const query = querystring.stringify(parametros)
 
-  const proposicoes = await httpGet(urlProposicoes(query))
+  const proposicoes = await httpGet(urlProposicoes(query), [])
+  const proposicoesUri = proposicoes.map(p => p.uri)
+  const proposicoesDetalhesPromises = proposicoesUri.map(p => httpGet(p, {}))
+  const proposicoesDetalhes = await Promise.all(proposicoesDetalhesPromises)
 
   // Autores
 
@@ -57,8 +60,10 @@ module.exports = async (context) => {
 
   return proposicoes.map((proposicao, index) => ({
     id: proposicao.id,
+    dataApresentacao: new Date(get(proposicoesDetalhes[index], 'dataApresentacao')),
     siglaTipo: proposicao.siglaTipo,
     numero: proposicao.numero,
+    situacao: get(proposicoesDetalhes[index], 'statusProposicao.descricaoSituacao'),
     ano: proposicao.ano,
     ementa: proposicao.ementa,
     autor: autoresComFotos[index],

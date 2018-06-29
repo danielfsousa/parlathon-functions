@@ -52,6 +52,8 @@ module.exports = async (context) => {
   return proposicoesDetalhadas.map((proposicao) => ({
     id: proposicao.IdentificacaoMateria.CodigoMateria,
     siglaTipo: proposicao.IdentificacaoMateria.SiglaSubtipoMateria,
+    dataApresentacao: new Date(proposicao.DadosBasicosMateria.DataApresentacao),
+    situacao: proposicao.SituacaoAtual.Autuacoes.Autuacao.Situacao.DescricaoSituacao,
     numero: proposicao.IdentificacaoMateria.NumeroMateria,
     ano: proposicao.IdentificacaoMateria.AnoMateria,
     ementa: proposicao.DadosBasicosMateria.EmentaMateria,
