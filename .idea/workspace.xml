@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f5abcb8f-b4ee-432b-890f-d3a336940021" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions/pesquisar.js" beforeDir="false" afterPath="$PROJECT_DIR$/functions/pesquisar.js" afterDir="false" />
-    </list>
+    <list default="true" id="f5abcb8f-b4ee-432b-890f-d3a336940021" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -130,7 +127,7 @@
       <workItem from="1530243440003" duration="1235000" />
       <workItem from="1530314413008" duration="1871000" />
       <workItem from="1530365183516" duration="2285000" />
-      <workItem from="1530370420924" duration="1118000" />
+      <workItem from="1530370420924" duration="1479000" />
     </task>
     <task id="LOCAL-00001" summary="Adiciona pesquisar">
       <created>1530316161620</created>
@@ -143,11 +140,10 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="6509000" />
+    <option name="totallyTimeSpent" value="6870000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24665257" />
       <window_info anchor="bottom" id="TODO" order="6" />
