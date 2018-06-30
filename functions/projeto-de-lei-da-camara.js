@@ -1,0 +1,96 @@
+const querystring = require('querystring')
+const axios = require('axios')
+const { get } = require('lodash')
+
+/**
+* Obter projeto de lei da câmara
+* @param {string} proposicaoId Id da proposição do senado
+* @returns {object} Projeto de lei do senado
+*/
+module.exports = async (proposicaoId, context) => {
+  const CASA = {
+    id: 2,
+    nome: 'Senado Federal'
+  }
+
+  const httpGetSenado = async (id) => {
+    const url = `http://legis.senado.leg.br/dadosabertos/materia/${id}`
+    const res = await axios.get(url)
+    return get(res, 'data.DetalheMateria.Materia', {})
+  }
+
+  const httpGetCamara = async (camaraObj = {}) => {
+    if (!camaraObj.IdentificacaoMateria) return {}
+    const { SiglaSubtipoMateria, NumeroMateria, AnoMateria } = camaraObj.IdentificacaoMateria
+    const query = querystring.stringify({
+      siglaTipo: SiglaSubtipoMateria,
+      ano: AnoMateria,
+      numero: NumeroMateria
+    })
+
+    const url = `https://dadosabertos.camara.leg.br/api/v2/proposicoes?${query}`
+    const res = await axios.get(url)
+
+    const proposicaoUrl = get(res, 'data.dados[0].uri')
+    const res2 = await axios.get(proposicaoUrl)
+    return get(res2, 'data.dados', {})
+  }
+
+  // TODO:
+  const formatarAutores = (autores) => {
+    return []
+  }
+
+  // TODO:
+  const obterLinhaDoTempo = (proposicao) => {
+    return {
+      casaIniciadora: new Date(),
+      casaRevisadora: null,
+      sancaoPresidencial: null,
+      promulgacaoEPublicacao: null
+    }
+  }
+
+  // TODO:
+  const obterProposicoesRelacionadas = () => {
+    return []
+  }
+
+  const proposicaoDoSenado = await httpGetSenado(proposicaoId)
+  const outrosNumeros = get(proposicaoDoSenado, 'OutrosNumerosDaMateria.OutroNumeroDaMateria', [])
+  const camaraObj = outrosNumeros.find(n => n.IdentificacaoMateria.SiglaCasaIdentificacaoMateria === 'CD') || {}
+  const proposicaoDaCamara = await httpGetCamara(camaraObj)
+
+  const regimeString = get(proposicaoDaCamara, 'statusProposicao.regime', '')
+  const regimeMatch = regimeString.match(/(.+) \(.*\)/)
+  const regime = (regimeMatch && regimeMatch[1]) || 'Desconhecido'
+  const normaGerada = get(proposicaoDoSenado, 'NormaGerada.IdentificacaoNorma', {})
+
+  return {
+    id: get(proposicaoDoSenado, 'IdentificacaoMateria.CodigoMateria'),
+    origem: get(proposicaoDoSenado, 'OrigemMateria.NomeCasaOrigem'),
+    assunto: get(proposicaoDoSenado, 'Assunto.AssuntoGeral.Descricao'),
+    siglaTipo: get(proposicaoDoSenado, 'IdentificacaoMateria.SiglaSubtipoMateria'),
+    descricaoTipo: get(proposicaoDoSenado, 'IdentificacaoMateria.DescricaoSubtipoMateria'),
+    numero: get(proposicaoDoSenado, 'IdentificacaoMateria.NumeroMateria'),
+    ano: get(proposicaoDoSenado, 'IdentificacaoMateria.AnoMateria'),
+    dataApresentacao: new Date(get(proposicaoDoSenado, 'DadosBasicosMateria.DataApresentacao')),
+    regime,
+    situacao: get(proposicaoDoSenado, 'SituacaoAtual.Autuacoes.Autuacao.Situacao.DescricaoSituacao'),
+    tramitando: get(proposicaoDoSenado, 'IdentificacaoMateria.IndicadorTramitando') === 'Sim',
+    ementa: get(proposicaoDoSenado, 'DadosBasicosMateria.EmentaMateria'),
+    explicacaoEmenta: get(proposicaoDoSenado, 'DadosBasicosMateria.ExplicacaoEmentaMateria'),
+    transformadoEm: {
+      id: normaGerada.CodigoNorma,
+      tipo: normaGerada.DescricaoTipoNorma,
+      numero: normaGerada.NumeroNorma,
+      ano: normaGerada.AnoNorma,
+      data: new Date(normaGerada.DataNorma)
+    },
+    linhaDoTempo: obterLinhaDoTempo(proposicaoDoSenado),
+    autores: formatarAutores(get(proposicaoDoSenado, 'Autoria.Autor')),
+    proposicoesRelacionadas: obterProposicoesRelacionadas(proposicaoDoSenado),
+    url: `https://www25.senado.leg.br/web/atividade/materias/-/materia/${proposicaoId}`,
+    casa: CASA
+  }
+}

@@ -92,6 +92,8 @@ module.exports = async (context) => {
     dataApresentacao: new Date(proposicao.DadosBasicosMateria.DataApresentacao),
     situacao: proposicao.SituacaoAtual.Autuacoes.Autuacao.Situacao.DescricaoSituacao,
     regime: regimes[index],
+    origem: proposicao.OrigemMateria.NomeCasaOrigem,
+    assunto: proposicao.Assunto.AssuntoGeral.Descricao,
     numero: proposicao.IdentificacaoMateria.NumeroMateria,
     ano: proposicao.IdentificacaoMateria.AnoMateria,
     ementa: proposicao.DadosBasicosMateria.EmentaMateria,

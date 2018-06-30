@@ -70,6 +70,8 @@ module.exports = async (context) => {
     siglaTipo: proposicao.siglaTipo,
     numero: proposicao.numero,
     regime: getRegime(proposicoesDetalhes[index]),
+    assunto: 'Desconhecido', // TODO:
+    origem: 'Desconhecido',
     situacao: get(proposicoesDetalhes[index], 'statusProposicao.descricaoSituacao'),
     ano: proposicao.ano,
     ementa: proposicao.ementa,
