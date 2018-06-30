@@ -1,4 +1,3 @@
-const querystring = require('querystring')
 const axios = require('axios')
 const { get } = require('lodash')
 
@@ -9,31 +8,19 @@ const { get } = require('lodash')
 */
 module.exports = async (proposicaoId, context) => {
   const CASA = {
-    id: 2,
-    nome: 'Senado Federal'
+    id: 1,
+    nome: 'Câmara dos Deputados'
   }
 
-  const httpGetSenado = async (id) => {
-    const url = `http://legis.senado.leg.br/dadosabertos/materia/${id}`
+  const httpGetSenado = async (url) => {
     const res = await axios.get(url)
     return get(res, 'data.DetalheMateria.Materia', {})
   }
 
-  const httpGetCamara = async (camaraObj = {}) => {
-    if (!camaraObj.IdentificacaoMateria) return {}
-    const { SiglaSubtipoMateria, NumeroMateria, AnoMateria } = camaraObj.IdentificacaoMateria
-    const query = querystring.stringify({
-      siglaTipo: SiglaSubtipoMateria,
-      ano: AnoMateria,
-      numero: NumeroMateria
-    })
-
-    const url = `https://dadosabertos.camara.leg.br/api/v2/proposicoes?${query}`
+  const httpGetCamara = async (id) => {
+    const url = `https://dadosabertos.camara.leg.br/api/v2/proposicoes/${id}`
     const res = await axios.get(url)
-
-    const proposicaoUrl = get(res, 'data.dados[0].uri')
-    const res2 = await axios.get(proposicaoUrl)
-    return get(res2, 'data.dados', {})
+    return get(res, 'data.dados', {})
   }
 
   // TODO:
@@ -56,10 +43,9 @@ module.exports = async (proposicaoId, context) => {
     return []
   }
 
-  const proposicaoDoSenado = await httpGetSenado(proposicaoId)
-  const outrosNumeros = get(proposicaoDoSenado, 'OutrosNumerosDaMateria.OutroNumeroDaMateria', [])
-  const camaraObj = outrosNumeros.find(n => n.IdentificacaoMateria.SiglaCasaIdentificacaoMateria === 'CD') || {}
-  const proposicaoDaCamara = await httpGetCamara(camaraObj)
+  const proposicaoDaCamara = await httpGetCamara(proposicaoId)
+  const urlSenado = proposicaoDaCamara.uriPropAnterior || proposicaoDaCamara.uriPropPosterior
+  const proposicaoDoSenado = await httpGetSenado(urlSenado)
 
   const regimeString = get(proposicaoDaCamara, 'statusProposicao.regime', '')
   const regimeMatch = regimeString.match(/(.+) \(.*\)/)
