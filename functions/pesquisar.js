@@ -91,6 +91,7 @@ module.exports = async (context) => {
     let propsSenado = proposicoesDetalhadasSenado.map((proposicao) => ({
         id: proposicao.IdentificacaoMateria.CodigoMateria,
         siglaTipo: proposicao.IdentificacaoMateria.SiglaSubtipoMateria,
+        origem: 'Senado Federal',
         dataApresentacao: new Date(proposicao.DadosBasicosMateria.DataApresentacao),
         situacao: proposicao.SituacaoAtual.Autuacoes.Autuacao.Situacao.DescricaoSituacao,
         numero: proposicao.IdentificacaoMateria.NumeroMateria,
@@ -139,6 +140,7 @@ module.exports = async (context) => {
         id: proposicao.id,
         dataApresentacao: new Date(get(proposicoesDetalhes[index], 'dataApresentacao')),
         siglaTipo: proposicao.siglaTipo,
+        origem: 'Câmara dos Deputados',
         numero: proposicao.numero,
         situacao: get(proposicoesDetalhes[index], 'statusProposicao.descricaoSituacao'),
         ano: proposicao.ano,
