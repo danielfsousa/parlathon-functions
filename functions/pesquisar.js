@@ -28,7 +28,14 @@ module.exports = async (context) => {
             params,
             headers: {'Accept': "application/json"}
         });
-        return get(res, 'data.PesquisaBasicaMateria.Materias.Materia', [])
+        let materias = get(res, 'data.PesquisaBasicaMateria.Materias.Materia', [])
+        let list = [];
+        if (materias instanceof Array) {
+            list = [...materias]
+        } else {
+            list = [materias]
+        }
+        return list
     }
 
     const httpGetOneMateriaSenado = async (url) => {
@@ -73,9 +80,7 @@ module.exports = async (context) => {
         return p
     }
 
-    const objetoCamara = httpGetCamara(getHousesParams(1, params))
-
-    const proposicoesSenado = await httpGetSenado(getHousesParams(2, params))
+    const proposicoesSenado = await httpGetSenado(getHousesParams(2, params));
     const proposicoesDetalhadasSenado = await Promise.all(
         proposicoesSenado
             .map(p => p.IdentificacaoMateria.CodigoMateria)
