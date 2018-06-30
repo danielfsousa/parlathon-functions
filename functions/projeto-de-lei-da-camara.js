@@ -25,7 +25,11 @@ module.exports = async (proposicaoId, context) => {
 
   // TODO:
   const formatarAutores = (autores) => {
-    return []
+    return autores.map(autor => ({
+      id: get(autor, 'IdentificacaoParlamentar.CodigoParlamentar'),
+      nome: get(autor, 'NomeAutor'),
+      foto: get(autor, 'IdentificacaoParlamentar.UrlFotoParlamentar', null)
+    }))
   }
 
   // TODO:
