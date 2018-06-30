@@ -22,6 +22,12 @@ module.exports = async (context) => {
     return data.dados || def
   }
 
+  const getRegime = (proposicaoDaCamara) => {
+    const regimeString = get(proposicaoDaCamara, 'statusProposicao.regime', '')
+    const regimeMatch = regimeString.match(/(.+) \(.*\)/)
+    return (regimeMatch && regimeMatch[1]) || 'Desconhecido'
+  }
+
   // Proposições
 
   const parametros = { ...context.params }
@@ -63,6 +69,7 @@ module.exports = async (context) => {
     dataApresentacao: new Date(get(proposicoesDetalhes[index], 'dataApresentacao')),
     siglaTipo: proposicao.siglaTipo,
     numero: proposicao.numero,
+    regime: getRegime(proposicoesDetalhes[index]),
     situacao: get(proposicoesDetalhes[index], 'statusProposicao.descricaoSituacao'),
     ano: proposicao.ano,
     ementa: proposicao.ementa,
